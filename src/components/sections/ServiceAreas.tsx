@@ -1,35 +1,79 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone } from "lucide-react";
 import { CONTACT } from "../../constants";
 import ScrollReveal from "../ui/ScrollReveal";
 
-// Leaflet loaded dynamically to avoid SSR issues
 declare global {
   interface Window { L: any; }
 }
 
-const SUBURB_PILLS = [
-  "Melbourne CBD", "South Yarra", "Richmond", "Collingwood", "Fitzroy", "Carlton",
-  "Balwyn", "Camberwell", "Box Hill", "Doncaster", "Ringwood", "Croydon", "Lilydale",
-  "Dandenong", "Hallam", "Berwick", "Narre Warren", "Frankston", "Pakenham",
-  "Craigieburn", "Epping", "Bundoora", "Preston", "Coburg", "Brunswick",
-  "Point Cook", "Werribee", "Hoppers Crossing", "Sunshine", "Footscray",
-  "Brighton", "Sandringham", "Cheltenham", "Mentone", "Moorabbin",
-  "Mornington", "Mount Eliza", "Rosebud", "Rye",
-];
+interface SuburbData {
+  lat: number;
+  lng: number;
+  region: string;
+  zoom: number;
+}
 
-// Service regions with approx centre coords, radius (km), label colour
+// Every suburb has its own precise coordinates + region assignment
+const SUBURBS: Record<string, SuburbData> = {
+  // CBD & Inner
+  "Melbourne CBD":  { lat: -37.8136, lng: 144.9631, region: "CBD & Inner", zoom: 14 },
+  "South Yarra":    { lat: -37.8394, lng: 144.9896, region: "CBD & Inner", zoom: 15 },
+  "Richmond":       { lat: -37.8230, lng: 145.0002, region: "CBD & Inner", zoom: 15 },
+  "Collingwood":    { lat: -37.8034, lng: 144.9935, region: "CBD & Inner", zoom: 15 },
+  "Fitzroy":        { lat: -37.7995, lng: 144.9779, region: "CBD & Inner", zoom: 15 },
+  "Carlton":        { lat: -37.7990, lng: 144.9670, region: "CBD & Inner", zoom: 15 },
+  // Eastern Suburbs
+  "Balwyn":         { lat: -37.8122, lng: 145.0864, region: "Eastern Suburbs", zoom: 14 },
+  "Camberwell":     { lat: -37.8254, lng: 145.0594, region: "Eastern Suburbs", zoom: 14 },
+  "Box Hill":       { lat: -37.8199, lng: 145.1208, region: "Eastern Suburbs", zoom: 14 },
+  "Doncaster":      { lat: -37.7878, lng: 145.1228, region: "Eastern Suburbs", zoom: 14 },
+  "Ringwood":       { lat: -37.8153, lng: 145.2281, region: "Eastern Suburbs", zoom: 14 },
+  "Croydon":        { lat: -37.7960, lng: 145.2824, region: "Eastern Suburbs", zoom: 14 },
+  "Lilydale":       { lat: -37.7577, lng: 145.3459, region: "Eastern Suburbs", zoom: 14 },
+  // South East
+  "Dandenong":      { lat: -37.9878, lng: 145.2150, region: "South East", zoom: 14 },
+  "Hallam":         { lat: -38.0372, lng: 145.2645, region: "South East", zoom: 14 },
+  "Berwick":        { lat: -38.0353, lng: 145.3418, region: "South East", zoom: 14 },
+  "Narre Warren":   { lat: -38.0284, lng: 145.3005, region: "South East", zoom: 14 },
+  "Frankston":      { lat: -38.1432, lng: 145.1257, region: "South East", zoom: 14 },
+  "Pakenham":       { lat: -38.0713, lng: 145.4878, region: "South East", zoom: 13 },
+  // Northern Suburbs
+  "Craigieburn":    { lat: -37.6013, lng: 144.9380, region: "Northern Suburbs", zoom: 14 },
+  "Epping":         { lat: -37.6460, lng: 145.0207, region: "Northern Suburbs", zoom: 14 },
+  "Bundoora":       { lat: -37.7055, lng: 145.0620, region: "Northern Suburbs", zoom: 14 },
+  "Preston":        { lat: -37.7449, lng: 145.0707, region: "Northern Suburbs", zoom: 14 },
+  "Coburg":         { lat: -37.7436, lng: 144.9655, region: "Northern Suburbs", zoom: 14 },
+  "Brunswick":      { lat: -37.7674, lng: 144.9618, region: "Northern Suburbs", zoom: 15 },
+  // Western Suburbs
+  "Point Cook":     { lat: -37.8994, lng: 144.7535, region: "Western Suburbs", zoom: 14 },
+  "Werribee":       { lat: -37.9023, lng: 144.6629, region: "Western Suburbs", zoom: 14 },
+  "Hoppers Crossing":{ lat: -37.8826, lng: 144.6997, region: "Western Suburbs", zoom: 14 },
+  "Sunshine":       { lat: -37.7887, lng: 144.8311, region: "Western Suburbs", zoom: 14 },
+  "Footscray":      { lat: -37.8006, lng: 144.8997, region: "Western Suburbs", zoom: 15 },
+  // Bayside
+  "Brighton":       { lat: -37.9086, lng: 145.0017, region: "Bayside", zoom: 14 },
+  "Sandringham":    { lat: -37.9510, lng: 145.0067, region: "Bayside", zoom: 14 },
+  "Cheltenham":     { lat: -37.9535, lng: 145.0596, region: "Bayside", zoom: 14 },
+  "Mentone":        { lat: -37.9768, lng: 145.0605, region: "Bayside", zoom: 14 },
+  "Moorabbin":      { lat: -37.9377, lng: 145.0436, region: "Bayside", zoom: 14 },
+  // Mornington Peninsula
+  "Mornington":     { lat: -38.2196, lng: 145.0377, region: "Mornington Peninsula", zoom: 14 },
+  "Mount Eliza":    { lat: -38.1916, lng: 145.0863, region: "Mornington Peninsula", zoom: 14 },
+  "Rosebud":        { lat: -38.3572, lng: 144.9044, region: "Mornington Peninsula", zoom: 14 },
+  "Rye":            { lat: -38.3724, lng: 144.8288, region: "Mornington Peninsula", zoom: 14 },
+};
+
 const SERVICE_REGIONS = [
-  { name: "CBD & Inner",        lat: -37.813, lng: 144.963, radius: 6000,  color: "#1B4D8F", fill: "rgba(27,77,143,0.12)"   },
-  { name: "Eastern Suburbs",    lat: -37.820, lng: 145.160, radius: 18000, color: "#E8622A", fill: "rgba(232,98,42,0.10)"   },
-  { name: "South East",         lat: -37.970, lng: 145.210, radius: 20000, color: "#0D9488", fill: "rgba(13,148,136,0.10)"  },
-  { name: "Northern Suburbs",   lat: -37.680, lng: 144.990, radius: 18000, color: "#7C3AED", fill: "rgba(124,58,237,0.10)"  },
-  { name: "Western Suburbs",    lat: -37.820, lng: 144.760, radius: 16000, color: "#D97706", fill: "rgba(217,119,6,0.10)"   },
-  { name: "Bayside",            lat: -37.930, lng: 145.000, radius: 10000, color: "#2563EB", fill: "rgba(37,99,235,0.10)"   },
-  { name: "Mornington Peninsula",lat: -38.150, lng: 145.050, radius: 18000, color: "#DB2777", fill: "rgba(219,39,119,0.10)" },
+  { name: "CBD & Inner",          lat: -37.813, lng: 144.963, radius: 6000,  color: "#1B4D8F", fill: "rgba(27,77,143,0.12)"   },
+  { name: "Eastern Suburbs",      lat: -37.820, lng: 145.160, radius: 18000, color: "#E8622A", fill: "rgba(232,98,42,0.10)"   },
+  { name: "South East",           lat: -37.970, lng: 145.210, radius: 20000, color: "#0D9488", fill: "rgba(13,148,136,0.10)"  },
+  { name: "Northern Suburbs",     lat: -37.680, lng: 144.990, radius: 18000, color: "#7C3AED", fill: "rgba(124,58,237,0.10)"  },
+  { name: "Western Suburbs",      lat: -37.820, lng: 144.760, radius: 16000, color: "#D97706", fill: "rgba(217,119,6,0.10)"   },
+  { name: "Bayside",              lat: -37.930, lng: 145.000, radius: 10000, color: "#2563EB", fill: "rgba(37,99,235,0.10)"   },
+  { name: "Mornington Peninsula", lat: -38.150, lng: 145.050, radius: 18000, color: "#DB2777", fill: "rgba(219,39,119,0.10)" },
 ];
 
-// Notable pin locations
 const PINS = [
   { name: "AGG Doors HQ", lat: -38.037, lng: 145.265, type: "hq" },
   { name: "Melbourne CBD",  lat: -37.813, lng: 144.963, type: "area" },
@@ -43,13 +87,131 @@ const PINS = [
 export default function ServiceAreas() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const circlesRef = useRef<Record<string, any>>({});
+  const suburbMarkerRef = useRef<any>(null);
+  const [activeSuburb, setActiveSuburb] = useState<string | null>(null);
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+
+  const flyToSuburb = (suburbName: string) => {
+    const data = SUBURBS[suburbName];
+    const map = mapInstanceRef.current;
+    if (!data || !map) return;
+
+    setActiveSuburb(suburbName);
+    setActiveRegion(data.region);
+
+    // Dim all circles, highlight the suburb's region
+    Object.entries(circlesRef.current).forEach(([name, circle]) => {
+      if (name === data.region) {
+        circle.setStyle({ weight: 3, opacity: 1, fillOpacity: 0.35, dashArray: "" });
+      } else {
+        circle.setStyle({ weight: 1.5, opacity: 0.25, fillOpacity: 0.05, dashArray: "6 4" });
+      }
+    });
+
+    // Remove previous suburb marker
+    if (suburbMarkerRef.current) {
+      suburbMarkerRef.current.remove();
+      suburbMarkerRef.current = null;
+    }
+
+    // Drop a precise suburb pin
+    const L = (window as any).L;
+    if (L) {
+      const regionColor = SERVICE_REGIONS.find(r => r.name === data.region)?.color ?? "#1B4D8F";
+      const suburbIcon = L.divIcon({
+        html: `<div style="
+          position:relative;
+          width:32px;height:32px;
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <div style="
+            width:32px;height:32px;
+            background:${regionColor};
+            border-radius:50% 50% 50% 0;
+            transform:rotate(-45deg);
+            border:3px solid white;
+            box-shadow:0 3px 14px ${regionColor}80;
+          "></div>
+          <div style="
+            position:absolute;
+            width:10px;height:10px;
+            background:white;
+            border-radius:50%;
+            top:50%;left:50%;
+            transform:translate(-50%,-54%) rotate(0deg);
+          "></div>
+        </div>`,
+        className: "",
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -36],
+      });
+
+      const marker = L.marker([data.lat, data.lng], { icon: suburbIcon }).addTo(map);
+      marker.bindPopup(
+        `<div style="font-family:sans-serif;padding:6px 2px;min-width:140px;">
+          <div style="font-weight:800;font-size:13px;color:${regionColor};margin-bottom:3px;">📍 ${suburbName}</div>
+          <div style="font-size:11px;color:#666;margin-bottom:6px;">${data.region}</div>
+          <a href="${CONTACT.phoneTel}" style="display:inline-block;background:${regionColor};color:white;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">📞 Book a Tech</a>
+        </div>`,
+        { closeButton: true, maxWidth: 220 }
+      ).openPopup();
+
+      suburbMarkerRef.current = marker;
+    }
+
+    map.flyTo([data.lat, data.lng], data.zoom, { duration: 0.85, easeLinearity: 0.4 });
+  };
+
+  const flyToRegion = (regionName: string) => {
+    const region = SERVICE_REGIONS.find(r => r.name === regionName);
+    const map = mapInstanceRef.current;
+    if (!region || !map) return;
+
+    setActiveSuburb(null);
+    setActiveRegion(regionName);
+
+    if (suburbMarkerRef.current) {
+      suburbMarkerRef.current.remove();
+      suburbMarkerRef.current = null;
+    }
+
+    Object.entries(circlesRef.current).forEach(([name, circle]) => {
+      if (name === regionName) {
+        circle.setStyle({ weight: 3, opacity: 1, fillOpacity: 0.35, dashArray: "" });
+      } else {
+        circle.setStyle({ weight: 1.5, opacity: 0.25, fillOpacity: 0.05, dashArray: "6 4" });
+      }
+    });
+
+    map.flyTo([region.lat, region.lng], 11, { duration: 0.85 });
+  };
+
+  const resetMap = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    setActiveSuburb(null);
+    setActiveRegion(null);
+
+    if (suburbMarkerRef.current) {
+      suburbMarkerRef.current.remove();
+      suburbMarkerRef.current = null;
+    }
+
+    Object.values(circlesRef.current).forEach((circle: any) => {
+      circle.setStyle({ weight: 2, opacity: 0.7, fillOpacity: 0.5, dashArray: "6 4" });
+    });
+
+    map.flyToBounds([[-38.35, 144.55], [-37.45, 145.55]], { duration: 0.8 });
+  };
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Dynamically import leaflet
     import("leaflet").then((L) => {
-      // Fix default icon paths (common Webpack/Vite issue)
+      (window as any).L = L;
+
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -67,7 +229,6 @@ export default function ServiceAreas() {
 
       mapInstanceRef.current = map;
 
-      // Dark/styled tile layer using CartoDB Dark Matter
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         {
@@ -77,7 +238,6 @@ export default function ServiceAreas() {
         }
       ).addTo(map);
 
-      // Draw service region circles
       SERVICE_REGIONS.forEach((region) => {
         const circle = L.circle([region.lat, region.lng], {
           radius: region.radius,
@@ -93,9 +253,11 @@ export default function ServiceAreas() {
           `<div style="font-family:sans-serif;font-size:12px;font-weight:700;color:${region.color};padding:4px 8px;border-radius:6px;white-space:nowrap;">${region.name}</div>`,
           { permanent: false, sticky: true, className: "leaflet-region-tooltip" }
         );
+
+        circle.on("click", () => flyToRegion(region.name));
+        circlesRef.current[region.name] = circle;
       });
 
-      // HQ star icon
       const hqIcon = L.divIcon({
         html: `<div style="
           width:36px;height:36px;
@@ -112,8 +274,7 @@ export default function ServiceAreas() {
         popupAnchor: [0, -22],
       });
 
-      // Area pin icon
-      const areaIcon = (label: string) => L.divIcon({
+      const areaIcon = () => L.divIcon({
         html: `<div style="
           width:28px;height:28px;
           background:#1B4D8F;
@@ -130,9 +291,8 @@ export default function ServiceAreas() {
         popupAnchor: [0, -30],
       });
 
-      // Add pins
       PINS.forEach((pin) => {
-        const icon = pin.type === "hq" ? hqIcon : areaIcon(pin.name);
+        const icon = pin.type === "hq" ? hqIcon : areaIcon();
         const marker = L.marker([pin.lat, pin.lng], { icon }).addTo(map);
 
         const popupContent = pin.type === "hq"
@@ -146,20 +306,11 @@ export default function ServiceAreas() {
               <div style="font-size:11px;color:#777;margin-top:2px;">Service area</div>
             </div>`;
 
-        marker.bindPopup(popupContent, {
-          closeButton: true,
-          maxWidth: 220,
-        });
+        marker.bindPopup(popupContent, { closeButton: true, maxWidth: 220 });
       });
 
-      // Custom zoom control position
       map.zoomControl.setPosition("bottomright");
-
-      // Fit Melbourne bounds roughly
-      map.fitBounds([
-        [-38.35, 144.55],
-        [-37.45, 145.55],
-      ]);
+      map.fitBounds([[-38.35, 144.55], [-37.45, 145.55]]);
     });
 
     return () => {
@@ -178,8 +329,8 @@ export default function ServiceAreas() {
           <h2 className="h-section">We Cover All of Melbourne</h2>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
             From the CBD to the outer suburbs — our technicians are positioned
-            across Melbourne for fast response times wherever you are. Pan,
-            zoom and click pins to explore our coverage.
+            across Melbourne for fast response times wherever you are. Click a
+            suburb to pinpoint it on the map.
           </p>
         </ScrollReveal>
 
@@ -187,16 +338,57 @@ export default function ServiceAreas() {
           {/* Left: pill cloud + legend */}
           <ScrollReveal direction="left">
             <div className="rounded-2xl border border-border bg-surface-raised p-7 shadow-card">
-              <p className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-ink-light">Suburbs we service</p>
-              <div className="flex flex-wrap gap-2">
-                {SUBURB_PILLS.map((suburb) => (
-                  <span
-                    key={suburb}
-                    className="cursor-default rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/[0.06] hover:text-brand"
+              <div className="mb-5 flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-light">Suburbs we service</p>
+                {(activeSuburb || activeRegion) && (
+                  <button
+                    onClick={resetMap}
+                    className="text-xs font-semibold text-brand hover:underline"
                   >
-                    {suburb}
-                  </span>
-                ))}
+                    Reset map ↺
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(SUBURBS).map(([suburb, data]) => {
+                  const regionData = SERVICE_REGIONS.find(r => r.name === data.region);
+                  const isActive = activeSuburb === suburb;
+                  const isRegionActive = activeRegion === data.region && !activeSuburb;
+                  const isDimmed = activeRegion !== null && activeRegion !== data.region;
+
+                  return (
+                    <button
+                      key={suburb}
+                      onClick={() => flyToSuburb(suburb)}
+                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5"
+                      style={{
+                        borderColor: isActive
+                          ? regionData?.color
+                          : isRegionActive
+                          ? `${regionData?.color}60`
+                          : isDimmed
+                          ? "rgba(0,0,0,0.07)"
+                          : undefined,
+                        background: isActive
+                          ? `${regionData?.color}18`
+                          : isRegionActive
+                          ? `${regionData?.color}08`
+                          : "transparent",
+                        color: isActive
+                          ? regionData?.color
+                          : isRegionActive
+                          ? `${regionData?.color}cc`
+                          : isDimmed
+                          ? "#bbb"
+                          : undefined,
+                        transform: isActive ? "translateY(-2px)" : undefined,
+                        boxShadow: isActive ? `0 2px 8px ${regionData?.color}40` : undefined,
+                      }}
+                    >
+                      {suburb}
+                    </button>
+                  );
+                })}
                 <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-dashed border-brand/40 bg-brand/5 px-3 py-1.5 text-xs font-semibold text-brand">
                   + many more
                 </span>
@@ -212,15 +404,35 @@ export default function ServiceAreas() {
 
             {/* Region legend */}
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {SERVICE_REGIONS.map(({ name, color }) => (
-                <div
-                  key={name}
-                  className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2"
-                >
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
-                  <span className="text-xs font-medium text-ink-soft">{name}</span>
-                </div>
-              ))}
+              {SERVICE_REGIONS.map(({ name, color }) => {
+                const isActive = activeRegion === name;
+                return (
+                  <button
+                    key={name}
+                    onClick={() => isActive ? resetMap() : flyToRegion(name)}
+                    className="flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-all duration-150 hover:-translate-y-0.5"
+                    style={{
+                      borderColor: isActive ? color : undefined,
+                      background: isActive ? `${color}12` : undefined,
+                    }}
+                  >
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full transition-transform duration-150"
+                      style={{
+                        background: color,
+                        transform: isActive ? "scale(1.4)" : "scale(1)",
+                        boxShadow: isActive ? `0 0 6px ${color}80` : undefined,
+                      }}
+                    />
+                    <span
+                      className="text-xs font-medium transition-colors duration-150"
+                      style={{ color: isActive ? color : undefined }}
+                    >
+                      {name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* CTA */}
@@ -233,33 +445,41 @@ export default function ServiceAreas() {
             </a>
           </ScrollReveal>
 
-          {/* Right: interactive Leaflet map */}
+          {/* Right: Leaflet map */}
           <ScrollReveal direction="right" delay={120}>
             <div
               className="overflow-hidden rounded-2xl border border-border shadow-card"
               style={{ height: "520px", position: "relative" }}
             >
-              {/* Map container */}
               <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
-              {/* Map overlay label */}
               <div
                 className="pointer-events-none absolute left-3 top-3 z-[1000] rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white"
                 style={{ background: "rgba(15,27,45,0.75)", backdropFilter: "blur(8px)" }}
               >
                 Greater Melbourne — Service Coverage
               </div>
+
+              {(activeSuburb || activeRegion) && (
+                <div
+                  className="pointer-events-none absolute bottom-10 left-3 z-[1000] rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
+                  style={{
+                    background: SERVICE_REGIONS.find(r => r.name === activeRegion)?.color ?? "#1B4D8F",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  {activeSuburb ? `📍 ${activeSuburb}` : `📍 ${activeRegion}`}
+                </div>
+              )}
             </div>
 
-            {/* Map hint */}
             <p className="mt-2.5 text-center text-xs text-ink-light">
-              🖱 Drag to pan · Scroll to zoom · Click pins for details
+              🖱 Click a suburb pill to pinpoint it · Drag to pan · Scroll to zoom
             </p>
           </ScrollReveal>
         </div>
       </div>
 
-      {/* Leaflet tooltip style override */}
       <style>{`
         .leaflet-region-tooltip {
           background: white !important;
@@ -267,10 +487,6 @@ export default function ServiceAreas() {
           box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important;
           border-radius: 8px !important;
           padding: 0 !important;
-        }
-        .leaflet-region-tooltip .leaflet-tooltip-left::before,
-        .leaflet-region-tooltip .leaflet-tooltip-right::before {
-          display: none;
         }
         .leaflet-popup-content-wrapper {
           border-radius: 10px !important;
