@@ -27,7 +27,8 @@ export const PARENT_BRAND = {
   reviewsUrl: "https://www.aggdoors.com.au/reviews/",
   founded: 1999,
   experienceLabel: "20+ years",
-  reviewLabel: "hundreds of customer reviews",
+  reviewLabel: "700+ customer reviews",
+  rating: "4.8",
 } as const;
 
 export const NAV_LINKS = [
@@ -40,7 +41,7 @@ export const NAV_LINKS = [
 
 export const STATS = [
   { value: "20+", label: "Years Experience" },
-  { value: "100s", label: "Customer Reviews" },
+  { value: "700+", label: "Customer Reviews" },
   { value: "24/7", label: "Emergency Support" },
   { value: "100%", label: "Safety Focused" },
 ] as const;

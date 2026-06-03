@@ -1,8 +1,10 @@
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import MobileCTABar from "./components/layout/MobileCTABar";
+import FloatingQuoteButton from "./components/layout/FloatingQuoteButton";
 import Hero from "./components/sections/Hero";
 import StatsBar from "./components/sections/StatsBar";
+import TrustBadges from "./components/sections/TrustBadges";
 import Services from "./components/sections/Services";
 import HowItWorks from "./components/sections/HowItWorks";
 import ServiceAreas from "./components/sections/ServiceAreas";
@@ -34,6 +36,7 @@ export default function App() {
           onCall={() => { trackCall(); }}
           onEmergencyCall={() => { trackEmergencyCall(); }}
         />
+        <TrustBadges />
         <StatsBar />
         <Services />
         <BackedByAgg />
@@ -48,6 +51,7 @@ export default function App() {
       </main>
       <Footer />
       <MobileCTABar onCall={trackCall} onEmergencyCall={trackEmergencyCall} />
+      <FloatingQuoteButton />
     </div>
   );
 }

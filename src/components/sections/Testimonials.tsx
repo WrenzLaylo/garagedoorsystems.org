@@ -188,7 +188,7 @@ export default function Testimonials() {
           <span className="eyebrow mb-4">Reviews</span>
           <h2 className="h-section">What Our Customers Say</h2>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
-            AGG Doors has hundreds of customer reviews across Google and word-of-mouth. We link directly to the source so you can verify the latest feedback before booking.
+            AGG Doors has 700+ Google reviews with a 4.8-star rating. We link directly to the source so you can verify the latest feedback before booking.
           </p>
           <a
             href={PARENT_BRAND.reviewsUrl}
