@@ -35,14 +35,20 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr]">
           {/* ── Brand column ── */}
           <div>
-            <div className="mb-6 flex flex-col">
-              <span className="font-display text-lg font-bold text-ink-inverse">
-                {BUSINESS.name}
-              </span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-brand-light">
-                A Division of {BUSINESS.parenBrand}
-              </span>
-            </div>
+            {/* Logo — big and confident */}
+            <a
+              href="#top"
+              className="group mb-6 inline-block transition-opacity duration-300 hover:opacity-90"
+              aria-label="Garage Door Systems — back to top"
+            >
+              <img
+                src="/assets/garage-door-systems-logo.png"
+                alt="Garage Door Systems — powered by AGG Doors"
+                className="h-12 w-auto object-contain"
+                draggable={false}
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
+            </a>
             <p className="max-w-sm text-sm leading-relaxed text-ink-inverse/60">
               Full-service garage door specialists across Melbourne. Supply,
               installation, repairs, motors and automation — backed by{" "}
@@ -198,10 +204,11 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 text-xs text-ink-inverse/25 md:flex-row md:items-center md:justify-between">
+        {/* ── Powered-by badge — centred, prominent ── */}
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
           <a
             href={BUSINESS.parentBrandUrl}
-            className="group inline-flex w-fit items-center opacity-75 transition-all duration-300 hover:opacity-100 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light/50 focus-visible:rounded-lg"
+            className="group inline-flex w-fit items-center opacity-80 transition-all duration-300 hover:opacity-100 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light/50 focus-visible:rounded-lg"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Powered by AGG Doors — open AGG Doors website"
@@ -209,12 +216,11 @@ export default function Footer() {
             <img
               src="/assets/powered-by-aggdoors.png"
               alt="Powered by AGG Doors"
-              className="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+              className="h-11 w-auto transition-transform duration-300 group-hover:scale-105"
               draggable={false}
             />
           </a>
-
-          <p className="max-w-3xl leading-6">
+          <p className="max-w-3xl text-xs leading-6 text-ink-inverse/25">
             {PARENT_BRAND.legalName} &bull; ABN {PARENT_BRAND.abn} &bull; {PARENT_BRAND.address} &bull;{" "}
             <a
               href={PARENT_BRAND.shopUrl}

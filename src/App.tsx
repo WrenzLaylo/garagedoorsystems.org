@@ -1,5 +1,6 @@
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import MobileCTABar from "./components/layout/MobileCTABar";
 import Hero from "./components/sections/Hero";
 import StatsBar from "./components/sections/StatsBar";
 import Services from "./components/sections/Services";
@@ -46,6 +47,7 @@ export default function App() {
         <FinalCTA onCall={trackCall} onEmergencyCall={trackEmergencyCall} />
       </main>
       <Footer />
+      <MobileCTABar onCall={trackCall} />
     </div>
   );
 }

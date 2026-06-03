@@ -41,14 +41,15 @@ const SERVICE_PHOTOS = [
   },
 ];
 
-/* ─── Tilt-enabled card wrapper ────────────────────────────────────── */
 function TiltCard({
   service,
+  featured = false,
 }: {
   service: (typeof SERVICES)[number];
+  featured?: boolean;
 }) {
   const { ref, onMouseMove, onMouseLeave, onMouseEnter } = useTilt({
-    maxTilt: 6,
+    maxTilt: featured ? 4 : 6,
     scale: 1.02,
   });
 
@@ -62,68 +63,87 @@ function TiltCard({
       onMouseEnter={onMouseEnter}
       className="h-full"
     >
-      <article className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-7 transition-all duration-300 hover:-translate-y-1 hover:border-brand/20 hover:shadow-card-glow">
-        {/* Icon */}
-        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/8 transition-all duration-300 group-hover:bg-brand/15 group-hover:shadow-glow-brand">
+      <article
+        className={`group flex h-full flex-col rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-brand/20 hover:shadow-card-glow ${
+          featured ? "p-8 md:p-10" : "p-7"
+        }`}
+      >
+        {featured && (
+          <span className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+            Most requested
+          </span>
+        )}
+
+        <div
+          className={`mb-5 flex items-center justify-center rounded-xl bg-brand/8 transition-all duration-300 group-hover:bg-brand/15 group-hover:shadow-glow-brand ${
+            featured ? "h-16 w-16" : "h-12 w-12"
+          }`}
+        >
           <Icon
-            className="h-6 w-6 text-brand transition-transform duration-300 group-hover:scale-110"
+            className={`text-brand transition-transform duration-300 group-hover:scale-110 ${
+              featured ? "h-8 w-8" : "h-6 w-6"
+            }`}
             aria-hidden="true"
           />
         </div>
 
-        {/* Title */}
-        <h3 className="font-display text-lg font-semibold text-ink">
+        <h3
+          className={`font-display font-semibold text-ink ${
+            featured ? "text-2xl" : "text-lg"
+          }`}
+        >
           {service.title}
         </h3>
 
-        {/* Description */}
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-soft">
+        <p
+          className={`mt-2 flex-1 leading-relaxed text-ink-soft ${
+            featured ? "text-base" : "text-sm"
+          }`}
+        >
           {service.desc}
         </p>
 
-        {/* Feature bullets */}
-        <ul className="mt-5 space-y-2.5">
+        <ul className={`space-y-2.5 ${featured ? "mt-6" : "mt-5"}`}>
           {service.features.map((f) => (
-            <li
-              key={f}
-              className="flex items-start gap-2.5 text-xs text-ink-soft"
-            >
-              <span
-                className="relative mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand transition-all duration-300"
-                aria-hidden="true"
-              >
-                {/* Pulse ring on card hover */}
+            <li key={f} className="flex items-start gap-2.5 text-xs text-ink-soft">
+              <span className="relative mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand transition-all duration-300" aria-hidden="true">
                 <span className="absolute inset-0 rounded-full bg-brand/40 opacity-0 transition-opacity duration-300 group-hover:animate-pulse-soft group-hover:opacity-100" />
               </span>
               {f}
             </li>
           ))}
         </ul>
+
+        {featured && (
+          <a href="#contact" className="btn-accent mt-6 self-start text-sm">
+            Get a quote
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </a>
+        )}
       </article>
     </div>
   );
 }
 
-/* ─── Services section ─────────────────────────────────────────────── */
 export default function Services() {
+  const [featured, ...rest] = SERVICES;
+
   return (
     <section id="services" className="section bg-surface">
       <div className="container-x">
-        {/* Header */}
         <ScrollReveal className="mx-auto max-w-2xl text-center">
           <span className="eyebrow mb-4">What We Do</span>
           <h2 className="h-section">Complete Garage Door Systems</h2>
           <p className="mt-4 text-base text-ink-soft">
-            From new installations to emergency repairs — we handle every
-            aspect of your garage door. No subbies, no surprises, just
-            qualified technicians who know the trade.
+            From new installations to emergency repairs — we handle every aspect of your garage door. No subbies, no surprises, just qualified technicians who know the trade.
           </p>
         </ScrollReveal>
 
-        {/* Branded technician photo strip */}
+        {/* Photo strip */}
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {SERVICE_PHOTOS.map((photo, index) => (
-            <ScrollReveal key={photo.src} delay={index * 0.08}>
+            <ScrollReveal key={photo.src} delay={index * 80}>
               <figure className="group relative overflow-hidden rounded-2xl border border-border bg-ink shadow-card transition-all duration-500 hover:-translate-y-1 hover:shadow-card-hover">
                 <img
                   src={photo.src}
@@ -144,21 +164,28 @@ export default function Services() {
           ))}
         </div>
 
-        {/* Cards grid */}
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((service, index) => (
-            <ScrollReveal key={service.id} delay={index * 0.07}>
+        {/* Asymmetric card grid — featured card spans 2 cols */}
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
+          {/* Featured — spans 2 columns */}
+          <ScrollReveal className="md:col-span-2" delay={0}>
+            <TiltCard service={featured} featured />
+          </ScrollReveal>
+
+          {/* Second card — tall single col */}
+          <ScrollReveal delay={80}>
+            <TiltCard service={rest[0]} />
+          </ScrollReveal>
+
+          {/* Remaining 5 across 3 cols */}
+          {rest.slice(1).map((service, index) => (
+            <ScrollReveal key={service.id} delay={(index + 2) * 80}>
               <TiltCard service={service} />
             </ScrollReveal>
           ))}
         </div>
 
-        {/* CTA */}
         <ScrollReveal className="mt-14 text-center" delay={200}>
-          <a
-            href="#contact"
-            className="btn-primary inline-flex items-center gap-2"
-          >
+          <a href="#contact" className="btn-primary inline-flex items-center gap-2">
             Get a Free Quote
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
           </a>
