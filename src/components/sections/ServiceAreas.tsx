@@ -59,7 +59,7 @@ export default function ServiceAreas() {
           </ScrollReveal>
 
           {/* ── Right column: image card ── */}
-          <ScrollReveal direction="right" delay={0.12}>
+          <ScrollReveal direction="right" delay={120}>
             <div className="group relative overflow-hidden rounded-2xl border border-border shadow-card transition-shadow duration-500 hover:shadow-card-hover">
               <img
                 src="/assets/melbourne-technician-branded.webp"

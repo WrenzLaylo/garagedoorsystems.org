@@ -119,7 +119,7 @@ export default function Testimonials() {
         </div>
 
         {/* ── Bottom CTA ── */}
-        <ScrollReveal className="mt-12 text-center" delay={0.2}>
+        <ScrollReveal className="mt-12 text-center" delay={200}>
           <p className="text-sm text-ink-soft">
             Real reviews from real customers.{" "}
             <a

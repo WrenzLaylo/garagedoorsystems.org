@@ -177,7 +177,9 @@ export default function Hero({ onCall, onEmergencyCall }: Props) {
                 <img
                   src="/assets/hero-technician-branded.webp"
                   alt="AGG Doors technician repairing a garage door motor"
-                  className="h-[620px] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="h-[620px] w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+                  loading="eager"
+                  fetchPriority="high"
                   draggable={false}
                 />
 

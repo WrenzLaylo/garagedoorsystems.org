@@ -105,7 +105,7 @@ export default function Navbar({ onCall }: Props) {
             <img
               src="/assets/garage-door-systems-logo.png"
               alt="Garage Door Systems — powered by AGG Doors"
-              className="h-11 w-auto transition-transform duration-300 group-hover:scale-[1.02] md:h-12"
+              className="h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] md:h-10"
               draggable={false}
             />
           </a>

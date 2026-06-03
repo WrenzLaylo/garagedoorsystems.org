@@ -201,7 +201,7 @@ export default function Footer() {
         <div className="mt-6 flex flex-col gap-4 text-xs text-ink-inverse/25 md:flex-row md:items-center md:justify-between">
           <a
             href={BUSINESS.parentBrandUrl}
-            className="group inline-flex w-fit items-center rounded-2xl border border-white/10 bg-white px-4 py-3 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-brand-light/40 hover:shadow-glow-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light/50"
+            className="group inline-flex w-fit items-center opacity-75 transition-all duration-300 hover:opacity-100 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light/50 focus-visible:rounded-lg"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Powered by AGG Doors — open AGG Doors website"
@@ -209,7 +209,7 @@ export default function Footer() {
             <img
               src="/assets/powered-by-aggdoors.png"
               alt="Powered by AGG Doors"
-              className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+              className="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
               draggable={false}
             />
           </a>

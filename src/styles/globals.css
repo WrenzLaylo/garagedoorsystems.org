@@ -401,3 +401,40 @@ textarea:focus {
   0%, 100% { border-color: rgba(27, 77, 143, 0.2); }
   50% { border-color: rgba(27, 77, 143, 0.5); }
 }
+/* ===== PERFORMANCE ===== */
+/* Content visibility for below-fold sections */
+.section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
+
+/* Will-change hints for frequently animated elements */
+.animate-float,
+.animate-float-slow {
+  will-change: transform;
+}
+
+/* ===== GRADIENT SHIFT KEYFRAME (for inline style use) ===== */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===== SMOOTH IMAGE RENDERING ===== */
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-pulse-ring,
+  .stagger-children > * {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -59,7 +59,7 @@ export default function FinalCTA({ onCall }: Props) {
           </p>
         </ScrollReveal>
 
-        <ScrollReveal delay={0.06}>
+        <ScrollReveal delay={60}>
           <h2 className="font-display text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
             Let&apos;s Sort Your
             <span className="block mt-1 text-gradient-accent bg-clip-text" style={{
@@ -72,14 +72,14 @@ export default function FinalCTA({ onCall }: Props) {
           </h2>
         </ScrollReveal>
 
-        <ScrollReveal delay={0.12}>
+        <ScrollReveal delay={120}>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/65">
             Whether it&apos;s a small fix, a new installation, or a 3am
             emergency — AGG Doors has you covered across Melbourne.
           </p>
         </ScrollReveal>
 
-        <ScrollReveal delay={0.18}>
+        <ScrollReveal delay={180}>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <div
               ref={quoteBtn.ref as React.RefObject<HTMLDivElement>}
@@ -122,7 +122,7 @@ export default function FinalCTA({ onCall }: Props) {
         </ScrollReveal>
 
         {/* Trust badges */}
-        <ScrollReveal delay={0.24}>
+        <ScrollReveal delay={240}>
           <div className="mt-12 flex flex-wrap justify-center gap-6 text-xs font-medium text-white/40">
             <span className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />

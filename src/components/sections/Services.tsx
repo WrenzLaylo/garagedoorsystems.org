@@ -130,6 +130,7 @@ export default function Services() {
                   alt={photo.alt}
                   className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                   draggable={false}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
@@ -153,7 +154,7 @@ export default function Services() {
         </div>
 
         {/* CTA */}
-        <ScrollReveal className="mt-14 text-center" delay={0.2}>
+        <ScrollReveal className="mt-14 text-center" delay={200}>
           <a
             href="#contact"
             className="btn-primary inline-flex items-center gap-2"

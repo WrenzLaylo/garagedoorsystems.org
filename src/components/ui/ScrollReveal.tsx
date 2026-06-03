@@ -3,7 +3,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 interface Props {
   children: ReactNode;
   className?: string;
-  delay?: number;
+  delay?: number; // milliseconds (0-600)
   direction?: "up" | "left" | "right" | "scale";
 }
 
@@ -42,11 +42,16 @@ export default function ScrollReveal({
           ? "scale"
           : undefined;
 
+  // Map ms delay to 1-10 bucket (each bucket = 60ms)
+  // delay=0 or undefined -> no data-delay
+  // delay=60 -> 1, delay=120 -> 2, etc.
+  const delayBucket = delay ? Math.min(10, Math.max(1, Math.round(delay / 60))) : undefined;
+
   return (
     <div
       ref={ref}
       data-reveal={revealType ?? ""}
-      data-delay={delay ? Math.round(delay / 0.06) : undefined}
+      data-delay={delayBucket}
       className={className}
     >
       {children}
