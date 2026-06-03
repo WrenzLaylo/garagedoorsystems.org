@@ -8,8 +8,8 @@ export function trackEvent(name: string, payload: EventPayload = {}) {
   window.dataLayer.push({ event: name, ...payload });
 }
 
-export function trackCall() {
-  trackEvent("phone_call_click", { call_type: "business" });
+export function trackCall(callType: string = "business") {
+  trackEvent("phone_call_click", { call_type: callType });
 }
 
 export function trackEmergencyCall() {

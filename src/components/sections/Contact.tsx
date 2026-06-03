@@ -8,8 +8,6 @@ import {
   ClipboardCheck,
   FileImage,
   Loader2,
-  Mail,
-  MapPin,
   Phone,
   ShieldCheck,
   Upload,
@@ -96,6 +94,7 @@ function validate(form: FormValues): Errors {
   return errors;
 }
 
+/* ---------- Dropdown ---------- */
 interface DropdownProps {
   label: string;
   value: string;
@@ -165,14 +164,14 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
         aria-activedescendant={open ? `${id.current}-opt-${focused}` : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id.current}-err` : undefined}
-        className={`flex w-full items-center justify-between rounded-xl border bg-surface px-4 py-3 text-left text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brand/20 ${
-          error ? "border-accent" : "border-border hover:border-brand/40"
+        className={`flex w-full items-center justify-between rounded-xl border bg-surface-raised px-4 py-3 text-left text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand/20 ${
+          error ? "border-accent" : "border-border hover:border-brand/40 hover:shadow-sm"
         }`}
       >
         <span className={value ? "text-ink" : "text-ink-light"}>{value || "Select..."}</span>
         <ChevronDown
           size={18}
-          className={`text-ink-light transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-ink-light transition-transform duration-300 ${open ? "rotate-180 text-brand" : ""}`}
           aria-hidden="true"
         />
       </button>
@@ -182,7 +181,8 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
           id={listId}
           role="listbox"
           aria-labelledby={`${id.current}-label`}
-          className="absolute z-30 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border bg-surface py-1 shadow-2xl"
+          className="absolute z-30 mt-1.5 max-h-56 w-full overflow-auto rounded-xl border border-border bg-surface-raised py-1 shadow-xl animate-fade-in-scale"
+          style={{ transformOrigin: "top" }}
         >
           {options.map((option, i) => (
             <li
@@ -190,7 +190,7 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
               id={`${id.current}-opt-${i}`}
               role="option"
               aria-selected={value === option}
-              className={`flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm ${
+              className={`flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition-colors duration-150 ${
                 i === focused ? "bg-brand/8 text-brand" : "text-ink-soft hover:bg-surface-alt"
               }`}
               onMouseEnter={() => setFocused(i)}
@@ -207,6 +207,7 @@ function Dropdown({ label, value, options, onChange, error }: DropdownProps) {
   );
 }
 
+/* ---------- Chips ---------- */
 interface ChipsProps {
   label: string;
   value: string;
@@ -226,10 +227,10 @@ function Chips({ label, value, options, onChange }: ChipsProps) {
               key={option}
               type="button"
               onClick={() => onChange(option)}
-              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              className={`relative overflow-hidden rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
                 active
-                  ? "border-brand bg-brand/10 text-brand"
-                  : "border-border bg-surface text-ink-soft hover:border-brand/40 hover:text-brand"
+                  ? "border-brand bg-brand/10 text-brand shadow-sm"
+                  : "border-border bg-surface-raised text-ink-soft hover:border-brand/40 hover:text-brand hover:shadow-sm"
               }`}
             >
               {option}
@@ -241,6 +242,46 @@ function Chips({ label, value, options, onChange }: ChipsProps) {
   );
 }
 
+/* ---------- Input Field ---------- */
+interface InputFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  type?: string;
+  placeholder?: string;
+}
+
+function InputField({ id, label, value, onChange, error, type = "text", placeholder }: InputFieldProps) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor={id}>
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        className={`w-full rounded-xl border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 focus:shadow-sm ${
+          error ? "border-accent" : "border-border hover:border-brand/30"
+        }`}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-err` : undefined}
+      />
+      {error ? (
+        <p id={`${id}-err`} className="mt-1 flex items-center gap-1 text-xs text-accent" role="alert">
+          <AlertCircle size={12} />
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- Main Contact ---------- */
 export default function Contact({ onCall }: Props) {
   const [form, setForm] = useState<FormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
@@ -248,6 +289,7 @@ export default function Contact({ onCall }: Props) {
   const [fileName, setFileName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [formStartedAt, setFormStartedAt] = useState(() => Math.floor(Date.now() / 1000));
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const turnstileRef = useRef<HTMLDivElement | null>(null);
   const widgetId = useRef<string | null>(null);
@@ -288,6 +330,18 @@ export default function Contact({ onCall }: Props) {
   const onFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     setFileName(file ? file.name : "");
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      if (fileRef.current) fileRef.current.files = dt.files;
+      setFileName(file.name);
+    }
   };
 
   const removeFile = () => {
@@ -376,15 +430,14 @@ export default function Contact({ onCall }: Props) {
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
-
   return (
     <section id="contact" className="section bg-surface-alt">
       <div className="container-x grid gap-12 lg:grid-cols-2">
-        <ScrollReveal>
+        {/* Left column */}
+        <ScrollReveal direction="left">
           <span className="eyebrow mb-4">Get a Quote</span>
           <h2 className="h-section">Request Your Free Quote.</h2>
-          <p className="mt-3 text-ink-soft">
+          <p className="mt-3 text-ink-soft leading-relaxed">
             Tell us about the garage door system you need — supply, install, repair,
             automation, maintenance or emergency help. Prefer to talk? Call us any time.
           </p>
@@ -393,31 +446,31 @@ export default function Contact({ onCall }: Props) {
             <a
               href={CONTACT.emergencyTel}
               onClick={() => trackCall("emergency")}
-              className="flex items-center gap-3 rounded-2xl border border-accent/20 bg-surface p-4 text-ink-soft shadow-sm transition hover:border-accent/40 hover:text-accent"
+              className="group flex items-center gap-3 rounded-2xl border border-accent/15 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-accent/30 hover:shadow-card-hover hover:-translate-y-0.5"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent/10 text-accent">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent/10 text-accent transition-transform duration-300 group-hover:scale-110">
                 <Phone size={18} />
               </span>
               <span>
-                <span className="block text-xs font-semibold uppercase tracking-wide text-ink-light">
+                <span className="block text-xs font-bold uppercase tracking-[0.15em] text-ink-light">
                   24/7 emergency
                 </span>
-                <span className="font-display text-lg font-bold text-ink">{CONTACT.emergencyPhone}</span>
+                <span className="font-display text-lg font-bold text-ink transition-colors duration-200 group-hover:text-accent">{CONTACT.emergencyPhone}</span>
               </span>
             </a>
             <a
               href={CONTACT.phoneTel}
               onClick={() => { onCall(); trackCall("business"); }}
-              className="flex items-center gap-3 rounded-2xl border border-brand/15 bg-surface p-4 text-ink-soft shadow-sm transition hover:border-brand/40 hover:text-brand"
+              className="group flex items-center gap-3 rounded-2xl border border-brand/10 bg-surface-raised p-4 shadow-card transition-all duration-300 hover:border-brand/25 hover:shadow-card-hover hover:-translate-y-0.5"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand/10 text-brand">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand transition-transform duration-300 group-hover:scale-110">
                 <Phone size={18} />
               </span>
               <span>
-                <span className="block text-xs font-semibold uppercase tracking-wide text-ink-light">
+                <span className="block text-xs font-bold uppercase tracking-[0.15em] text-ink-light">
                   Business hours
                 </span>
-                <span className="font-display text-lg font-bold text-ink">{CONTACT.phone}</span>
+                <span className="font-display text-lg font-bold text-ink transition-colors duration-200 group-hover:text-brand">{CONTACT.phone}</span>
               </span>
             </a>
           </div>
@@ -426,9 +479,9 @@ export default function Contact({ onCall }: Props) {
             {CONTACT.address} | {CONTACT.hours}
           </p>
 
-          <div className="mt-10 rounded-3xl border border-border bg-surface p-5 shadow-card">
+          <div className="mt-10 rounded-2xl border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover">
             <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand/10 text-brand">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">
                 <ClipboardCheck size={22} />
               </span>
               <div>
@@ -439,28 +492,33 @@ export default function Contact({ onCall }: Props) {
               </div>
             </div>
             <div className="mt-5 grid gap-3 text-sm text-ink-soft">
-              <div className="flex gap-3 rounded-2xl border border-border bg-surface-alt p-4">
-                <Camera className="mt-0.5 shrink-0 text-brand" size={18} />
-                <span>Upload a photo of the door, motor, remote, track, or warning light.</span>
-              </div>
-              <div className="flex gap-3 rounded-2xl border border-border bg-surface-alt p-4">
-                <Wrench className="mt-0.5 shrink-0 text-brand" size={18} />
-                <span>Tell us if it is stuck, noisy, off track, damaged, or only opening halfway.</span>
-              </div>
-              <div className="flex gap-3 rounded-2xl border border-border bg-surface-alt p-4">
-                <ShieldCheck className="mt-0.5 shrink-0 text-brand" size={18} />
-                <span>We will confirm repair-first options before recommending replacement.</span>
-              </div>
+              {[
+                { icon: Camera, text: "Upload a photo of the door, motor, remote, track, or warning light." },
+                { icon: Wrench, text: "Tell us if it is stuck, noisy, off track, damaged, or only opening halfway." },
+                { icon: ShieldCheck, text: "We will confirm repair-first options before recommending replacement." },
+              ].map(({ icon: Icon, text }) => (
+                <div
+                  key={text}
+                  className="group/tip flex gap-3 rounded-2xl border border-border bg-surface-alt p-4 transition-all duration-200 hover:border-brand/20 hover:bg-brand/[0.02]"
+                >
+                  <Icon className="mt-0.5 shrink-0 text-brand transition-transform duration-200 group-hover/tip:scale-110" size={18} />
+                  <span>{text}</span>
+                </div>
+              ))}
             </div>
           </div>
         </ScrollReveal>
 
-        <ScrollReveal className="lg:pl-2">
+        {/* Right column — Form */}
+        <ScrollReveal direction="right" className="lg:pl-2">
           {status === "success" ? (
-            <div className="card flex flex-col items-center justify-center gap-3 py-16 text-center">
-              <CheckCircle2 size={48} className="text-brand" />
-              <h3 className="font-display text-xl font-semibold text-ink">Thanks, we have it.</h3>
-              <p className="max-w-sm text-sm text-ink-soft">
+            <div className="card flex flex-col items-center justify-center gap-4 py-20 text-center">
+              <div className="relative">
+                <CheckCircle2 size={56} className="text-brand" />
+                <div className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-brand/30" />
+              </div>
+              <h3 className="font-display text-2xl font-semibold text-ink">Thanks, we have it.</h3>
+              <p className="max-w-sm text-sm text-ink-soft leading-relaxed">
                 We will be in touch shortly. For urgent issues, call {CONTACT.emergencyPhone}.
               </p>
               <button type="button" onClick={() => setStatus("idle")} className="btn-primary mt-2">
@@ -468,67 +526,27 @@ export default function Contact({ onCall }: Props) {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="card space-y-4" noValidate>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor="name">Name</label>
-                  <input
-                    id="name"
-                    className={`${inputClass} ${errors.name ? "border-accent" : ""}`}
-                    placeholder="Your name"
-                    value={form.name}
-                    onChange={(e) => update("name", e.target.value)}
-                    aria-invalid={Boolean(errors.name)}
-                    aria-describedby={errors.name ? "name-err" : undefined}
-                  />
-                  {errors.name ? <p id="name-err" className="mt-1 text-xs text-accent" role="alert">{errors.name}</p> : null}
+            <form onSubmit={handleSubmit} className="card space-y-5" noValidate>
+              {/* Progress bar for submitting */}
+              {status === "submitting" && (
+                <div className="absolute left-0 right-0 top-0 h-1 overflow-hidden rounded-t-2xl">
+                  <div className="h-full w-full origin-left animate-shimmer" style={{
+                    background: "linear-gradient(90deg, transparent, #1B4D8F, transparent)",
+                  }} />
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor="phone">Phone</label>
-                  <input
-                    id="phone"
-                    className={`${inputClass} ${errors.phone ? "border-accent" : ""}`}
-                    placeholder="04xx xxx xxx"
-                    value={form.phone}
-                    onChange={(e) => update("phone", e.target.value)}
-                    aria-invalid={Boolean(errors.phone)}
-                    aria-describedby={errors.phone ? "phone-err" : undefined}
-                  />
-                  {errors.phone ? <p id="phone-err" className="mt-1 text-xs text-accent" role="alert">{errors.phone}</p> : null}
-                </div>
+              )}
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <InputField id="name" label="Name" placeholder="Your name" value={form.name} onChange={(v) => update("name", v)} error={errors.name} />
+                <InputField id="phone" label="Phone" placeholder="04xx xxx xxx" value={form.phone} onChange={(v) => update("phone", v)} error={errors.phone} />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor="email">Email</label>
-                  <input
-                    id="email"
-                    type="email"
-                    className={`${inputClass} ${errors.email ? "border-accent" : ""}`}
-                    placeholder="you@email.com"
-                    value={form.email}
-                    onChange={(e) => update("email", e.target.value)}
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? "email-err" : undefined}
-                  />
-                  {errors.email ? <p id="email-err" className="mt-1 text-xs text-accent" role="alert">{errors.email}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-ink" htmlFor="suburb">Suburb</label>
-                  <input
-                    id="suburb"
-                    className={`${inputClass} ${errors.suburb ? "border-accent" : ""}`}
-                    placeholder="e.g. Glen Waverley"
-                    value={form.suburb}
-                    onChange={(e) => update("suburb", e.target.value)}
-                    aria-invalid={Boolean(errors.suburb)}
-                    aria-describedby={errors.suburb ? "suburb-err" : undefined}
-                  />
-                  {errors.suburb ? <p id="suburb-err" className="mt-1 text-xs text-accent" role="alert">{errors.suburb}</p> : null}
-                </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <InputField id="email" label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={(v) => update("email", v)} error={errors.email} />
+                <InputField id="suburb" label="Suburb" placeholder="e.g. Glen Waverley" value={form.suburb} onChange={(v) => update("suburb", v)} error={errors.suburb} />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <Dropdown
                   label="Property type"
                   value={form.propertyType}
@@ -571,23 +589,29 @@ export default function Contact({ onCall }: Props) {
                 <textarea
                   id="message"
                   rows={4}
-                  className={`${inputClass} resize-none`}
+                  className="w-full rounded-xl border border-border bg-surface-raised px-4 py-3 text-sm text-ink placeholder:text-ink-light transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 resize-none hover:border-brand/30"
                   placeholder="Describe the fault or what you need..."
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
                 />
               </div>
 
+              {/* Photo upload with drag-and-drop */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-ink">Photo (optional)</label>
-                <div className="rounded-2xl border border-dashed border-border bg-surface-alt p-3 transition-colors hover:border-brand/40">
+                <div
+                  className={`drop-zone rounded-2xl p-3 transition-all duration-300 ${dragOver ? "drag-over" : ""}`}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
                       type="button"
                       onClick={() => fileRef.current?.click()}
-                      className="flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-surface px-4 py-3 text-left transition hover:bg-white"
+                      className="group flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-surface-raised px-4 py-3 text-left transition-all duration-200 hover:shadow-sm"
                     >
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand transition-transform duration-200 group-hover:scale-110">
                         {fileName ? <FileImage size={18} /> : <Upload size={18} />}
                       </span>
                       <span className="min-w-0">
@@ -603,7 +627,7 @@ export default function Contact({ onCall }: Props) {
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-accent/30 px-4 py-3 text-sm font-semibold text-accent transition hover:bg-accent/10"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-accent/30 px-4 py-3 text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/10 hover:shadow-sm"
                       >
                         <X size={16} /> Remove
                       </button>
@@ -613,6 +637,7 @@ export default function Contact({ onCall }: Props) {
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
               </div>
 
+              {/* Honeypot */}
               <input
                 type="text"
                 tabIndex={-1}
@@ -623,15 +648,23 @@ export default function Contact({ onCall }: Props) {
                 onChange={(e) => update("company", e.target.value)}
               />
 
+              {/* Turnstile */}
               {HAS_TURNSTILE ? (
-                <div ref={turnstileRef} className="cf-turnstile min-h-[65px]" />
+                <div className="rounded-xl border border-border bg-surface-alt p-2 transition-colors hover:border-brand/20">
+                  <div ref={turnstileRef} className="cf-turnstile min-h-[65px]" />
+                </div>
               ) : (
                 <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">
                   Add your Cloudflare Turnstile site key in .env.local before live submissions.
                 </p>
               )}
 
-              <button type="submit" disabled={status === "submitting"} className="btn-accent w-full justify-center py-3.5 text-base disabled:opacity-60">
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={status === "submitting"}
+                className="btn-accent w-full justify-center py-4 text-base disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 {status === "submitting" ? (
                   <>
                     <Loader2 size={18} className="animate-spin" /> Sending...
@@ -642,9 +675,10 @@ export default function Contact({ onCall }: Props) {
               </button>
 
               {status === "error" ? (
-                <p className="flex items-center gap-2 text-sm text-accent">
-                  <AlertCircle size={16} /> {submitError || "Something went wrong."} Please call {CONTACT.emergencyPhone} if urgent.
-                </p>
+                <div className="flex items-start gap-2 rounded-xl border border-accent/20 bg-accent/5 p-3 text-sm text-accent">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{submitError || "Something went wrong."} Please call {CONTACT.emergencyPhone} if urgent.</span>
+                </div>
               ) : null}
             </form>
           )}

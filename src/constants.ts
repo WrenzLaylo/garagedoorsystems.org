@@ -12,8 +12,22 @@ export const BUSINESS = {
   name: "Garage Door Systems",
   tagline: "Your complete garage door partner — supply, install, repair, automate",
   parenBrand: "AGG Doors",
-  parentBrandUrl: "https://aggdoors.com.au",
+  parentBrandUrl: "https://www.aggdoors.com.au/",
   founded: 1999,
+} as const;
+
+export const PARENT_BRAND = {
+  legalName: "AGG DOORS PTY. LTD.",
+  tradingName: "AGG Doors",
+  abn: "27 106 103 315",
+  abnLookupUrl: "https://abr.business.gov.au/ABN/View?abn=27106103315",
+  address: "10 Dallas Court, Hallam VIC 3803",
+  mainWebsite: "https://www.aggdoors.com.au/",
+  shopUrl: "https://shop.aggdoors.com.au/",
+  reviewsUrl: "https://www.aggdoors.com.au/reviews/",
+  founded: 1999,
+  experienceLabel: "20+ years",
+  reviewLabel: "hundreds of customer reviews",
 } as const;
 
 export const NAV_LINKS = [
@@ -25,10 +39,10 @@ export const NAV_LINKS = [
 ] as const;
 
 export const STATS = [
-  { value: "25+", label: "Years in Business" },
-  { value: "600+", label: "5-Star Reviews" },
+  { value: "20+", label: "Years Experience" },
+  { value: "100s", label: "Customer Reviews" },
   { value: "24/7", label: "Emergency Support" },
-  { value: "100%", label: "Safety Certified" },
+  { value: "100%", label: "Safety Focused" },
 ] as const;
 
 export interface ServiceItem {

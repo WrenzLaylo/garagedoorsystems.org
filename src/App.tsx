@@ -9,17 +9,15 @@ import Testimonials from "./components/sections/Testimonials";
 import FAQ from "./components/sections/FAQ";
 import Contact from "./components/sections/Contact";
 import FinalCTA from "./components/sections/FinalCTA";
+import BackedByAgg from "./components/sections/BackedByAgg";
+import CursorGlow from "./components/ui/CursorGlow";
 import { CONTACT } from "./constants";
 import { trackCall, trackEmergencyCall } from "./utils/analytics";
 
 export default function App() {
-  const contact = {
-    business: { number: CONTACT.phone, tel: CONTACT.phoneTel },
-    emergency: { number: CONTACT.emergencyPhone, tel: CONTACT.emergencyTel },
-  };
-
   return (
     <div className="min-h-screen bg-surface text-ink">
+      <CursorGlow />
       <Navbar
         onCall={() => {
           trackCall();
@@ -34,6 +32,7 @@ export default function App() {
         <Hero onCall={trackCall} onEmergencyCall={trackEmergencyCall} />
         <StatsBar />
         <Services />
+        <BackedByAgg />
         <HowItWorks />
         <ServiceAreas />
         <Testimonials />
