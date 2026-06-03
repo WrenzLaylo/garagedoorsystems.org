@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-surface font-body text-ink antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display text-ink;
+  }
+
+  ::selection {
+    background: rgba(29, 78, 216, 0.15);
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-surface;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-container px-5 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand text-white hover:-translate-y-0.5 hover:shadow-btn-brand;
+  }
+
+  .btn-accent {
+    @apply btn bg-accent text-white hover:-translate-y-0.5 hover:shadow-btn-accent;
+  }
+
+  .btn-ghost {
+    @apply btn border border-border text-ink hover:border-brand hover:text-brand;
+  }
+
+  .section {
+    @apply py-16 md:py-24;
+  }
+
+  .eyebrow {
+    @apply inline-block text-xs font-semibold uppercase tracking-widest text-brand;
+  }
+
+  .h-section {
+    @apply font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl lg:text-[2.5rem];
+  }
+
+  .card {
+    @apply rounded-2xl border border-border bg-surface p-6 shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium text-ink-soft transition-colors hover:text-brand;
+  }
+}
+
+/* Scroll reveal: content remains visible by default for SEO and no-JS safety */
+[data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal].revealed {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal][data-delay="1"],
+[data-reveal][data-delay="2"],
+[data-reveal][data-delay="3"],
+[data-reveal][data-delay="4"],
+[data-reveal][data-delay="5"],
+[data-reveal][data-delay="6"],
+[data-reveal][data-delay="7"] {
+  transition-delay: 0s;
+}
+
+/* Turnstile dark mode fix */
+.cf-turnstile {
+  min-height: 65px;
+}
+
+/* Form focus styles */
+input:focus, select:focus, textarea:focus {
+  border-color: #1D4ED8 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+}
