@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SERVICES } from "../../constants";
 import ScrollReveal from "../ui/ScrollReveal";
 import { useTilt } from "../../hooks/useTilt";
+import BeforeAfterSlider from "../ui/BeforeAfterSlider";
 import {
   PackagePlus,
   Wrench,
@@ -46,21 +47,34 @@ const SERVICE_CATEGORIES: Record<string, FilterId[]> = {
   "maintenance":     ["repair"],
 };
 
-const SERVICE_PHOTOS = [
+// Before/after slider data — real AGG Doors job photos
+const BEFORE_AFTER_PAIRS = [
   {
-    src: "/assets/hero-technician-branded.webp",
-    alt: "AGG Doors technician repairing a garage door motor",
-    label: "Motor repairs",
+    before: "/assets/door-before-outdoor.png",
+    after: "/assets/door-after-outdoor.png",
+    beforeAlt: "Worn, damaged panel lift door before replacement",
+    afterAlt: "Brand new panel lift door after AGG Doors installation",
+    beforeLabel: "Before",
+    afterLabel: "After",
+    caption: "Panel door replacement",
   },
   {
-    src: "/assets/melbourne-technician-branded.webp",
-    alt: "AGG Doors technician repairing a roller garage door",
-    label: "Roller door servicing",
+    before: "/assets/motor-before.png",
+    after: "/assets/motor-after.png",
+    beforeAlt: "Empty ceiling mount bracket before motor installation",
+    afterAlt: "New garage door motor fully installed by AGG Doors",
+    beforeLabel: "Before",
+    afterLabel: "After",
+    caption: "Motor installation",
   },
   {
-    src: "/assets/technician-door-service-branded.webp",
-    alt: "AGG Doors technician servicing a commercial roller door",
-    label: "Door installs and maintenance",
+    before: "/assets/roller-before.png",
+    after: "/assets/roller-after.png",
+    beforeAlt: "Roller door jammed open and coming off track",
+    afterAlt: "Roller door fully closed and operating smoothly after repair",
+    beforeLabel: "Before",
+    afterLabel: "After",
+    caption: "Roller door repair",
   },
 ];
 
@@ -213,29 +227,38 @@ export default function Services() {
           </div>
         </ScrollReveal>
 
-        {/* Photo strip — only show on "All" */}
+        {/* Before/After sliders — only show on "All" */}
         {activeFilter === "all" && (
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {SERVICE_PHOTOS.map((photo, index) => (
-              <ScrollReveal key={photo.src} delay={index * 80}>
-                <figure className="group relative overflow-hidden rounded-2xl border border-border bg-ink shadow-card transition-all duration-500 hover:-translate-y-1 hover:shadow-card-hover">
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
-                    draggable={false}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
-                  <figcaption className="absolute bottom-0 left-0 right-0 p-5">
-                    <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
-                      {photo.label}
-                    </span>
-                  </figcaption>
-                </figure>
-              </ScrollReveal>
-            ))}
+          <div className="mt-12">
+            <ScrollReveal className="mb-5 flex items-center justify-between" delay={60}>
+              <p className="text-sm font-semibold text-ink-soft">
+                Real results from our Melbourne customers
+              </p>
+              <span className="flex items-center gap-1.5 rounded-full bg-brand/8 px-3 py-1 text-xs font-bold text-brand">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                Drag to compare
+              </span>
+            </ScrollReveal>
+            <div className="grid gap-5 md:grid-cols-3">
+              {BEFORE_AFTER_PAIRS.map((pair, index) => (
+                <ScrollReveal key={pair.caption} delay={index * 80}>
+                  <div className="flex flex-col gap-2.5">
+                    <BeforeAfterSlider
+                      beforeSrc={pair.before}
+                      afterSrc={pair.after}
+                      beforeAlt={pair.beforeAlt}
+                      afterAlt={pair.afterAlt}
+                      beforeLabel={pair.beforeLabel}
+                      afterLabel={pair.afterLabel}
+                      className="h-64"
+                    />
+                    <p className="text-center text-xs font-semibold text-ink-light tracking-wide uppercase">
+                      {pair.caption}
+                    </p>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
           </div>
         )}
 

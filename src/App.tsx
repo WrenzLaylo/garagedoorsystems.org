@@ -47,7 +47,7 @@ export default function App() {
         <FinalCTA onCall={trackCall} onEmergencyCall={trackEmergencyCall} />
       </main>
       <Footer />
-      <MobileCTABar onCall={trackCall} />
+      <MobileCTABar onCall={trackCall} onEmergencyCall={trackEmergencyCall} />
     </div>
   );
 }

@@ -5,11 +5,58 @@ import ScrollReveal from "../ui/ScrollReveal";
 
 const CARD_W = 336 + 20; // card width + gap
 const SPEED = 0.6;
+// Minimum cards needed before infinite scroll makes sense
+const MIN_FOR_SCROLL = 4;
 
 // Collect unique service types for filter pills
 const SERVICE_TYPES = Array.from(
   new Set(TESTIMONIALS.map((t) => t.serviceType).filter(Boolean))
 ) as string[];
+
+function TestimonialCard({ t, index }: { t: typeof TESTIMONIALS[number]; index: number }) {
+  return (
+    <article
+      key={`${t.name}-${index}`}
+      className="group/card relative flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1"
+      draggable={false}
+    >
+      <svg className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 text-brand/[0.06] transition-all duration-500 group-hover/card:scale-125 group-hover/card:text-brand/[0.12]" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+        <path d="M20 65c0-16 10-31 28-40l5 8C40 40 36 50 36 56h12v24H20V65zm40 0c0-16 10-31 28-40l5 8C80 40 76 50 76 56h12v24H60V65z" />
+      </svg>
+
+      <div className="flex items-center gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star key={i} className={`h-4 w-4 ${i < t.rating ? "fill-accent text-accent" : "text-border"}`} aria-hidden="true" />
+        ))}
+      </div>
+
+      {t.serviceType && (
+        <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/[0.07] px-3 py-1 text-xs font-semibold tracking-wide text-brand">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-pulse-soft rounded-full bg-brand/60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+          </span>
+          {t.serviceType}
+        </span>
+      )}
+
+      <blockquote className="relative z-10 mt-4 flex-1 text-sm leading-relaxed text-ink-soft">
+        &ldquo;{t.text}&rdquo;
+      </blockquote>
+
+      <footer className="relative mt-5 pt-4">
+        <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-ink transition-colors duration-300 group-hover/card:text-brand">{t.name}</p>
+            <p className="mt-0.5 text-xs text-ink-soft">{t.suburb}</p>
+          </div>
+          <time className="rounded-md bg-surface-alt px-2.5 py-1 text-xs font-medium text-ink-light">{t.date}</time>
+        </div>
+      </footer>
+    </article>
+  );
+}
 
 export default function Testimonials() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -32,10 +79,12 @@ export default function Testimonials() {
     [activeFilter]
   );
 
-  // Triple the filtered set for seamless infinite scroll
+  const useScrollMode = filtered.length >= MIN_FOR_SCROLL;
+
+  // Triple the filtered set for seamless infinite scroll (only when enough cards)
   const CARDS = useMemo(
-    () => [...filtered, ...filtered, ...filtered],
-    [filtered]
+    () => useScrollMode ? [...filtered, ...filtered, ...filtered] : filtered,
+    [filtered, useScrollMode]
   );
 
   // Reset scroll position when filter changes
@@ -53,8 +102,9 @@ export default function Testimonials() {
     setActiveDot(dot);
   }, [filtered.length]);
 
-  // Auto-scroll loop — pauses on hover
+  // Auto-scroll loop — pauses on hover, disabled when not enough cards
   useEffect(() => {
+    if (!useScrollMode) return;
     const el = trackRef.current;
     if (!el) return;
 
@@ -72,17 +122,13 @@ export default function Testimonials() {
 
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [filtered.length, updateActiveDot]);
+  }, [filtered.length, updateActiveDot, useScrollMode]);
 
   // Jump to a specific dot/card
   const jumpToDot = useCallback(
     (index: number) => {
       const totalWidth = CARD_W * filtered.length;
-      // Stay in the first "copy" of the infinite set
-      const base = posRef.current % totalWidth;
-      const target = index * CARD_W;
-      // Choose the nearest direction
-      posRef.current = target + Math.floor(posRef.current / totalWidth) * totalWidth;
+      posRef.current = index * CARD_W + Math.floor(posRef.current / totalWidth) * totalWidth;
       if (trackRef.current) trackRef.current.scrollLeft = posRef.current;
       setActiveDot(index);
     },
@@ -197,117 +243,72 @@ export default function Testimonials() {
         </ScrollReveal>
       </div>
 
-      {/* Carousel */}
-      <div
-        className="relative mt-10"
-        onMouseEnter={() => { isHovered.current = true; }}
-        onMouseLeave={() => { isHovered.current = false; onMouseUp(); }}
-      >
-        {/* Edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-surface-alt to-transparent" aria-hidden="true" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-surface-alt to-transparent" aria-hidden="true" />
-
-        {/* Pause badge */}
+      {/* Carousel OR centered static grid */}
+      {useScrollMode ? (
         <div
-          className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-light opacity-0 shadow-sm transition-opacity duration-300"
-          style={{ opacity: 0 }}
-          id="pause-badge"
+          className="relative mt-10"
+          onMouseEnter={() => { isHovered.current = true; }}
+          onMouseLeave={() => { isHovered.current = false; onMouseUp(); }}
         >
-          ⏸ Paused
+          {/* Edge fades */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-surface-alt to-transparent" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-surface-alt to-transparent" aria-hidden="true" />
+
+          {/* Track */}
+          <div
+            ref={trackRef}
+            className="flex gap-5 overflow-x-hidden px-8 pb-4"
+            style={{
+              cursor: grabbing ? "grabbing" : "grab",
+              userSelect: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            aria-label="Customer testimonials — drag to scroll"
+            role="region"
+          >
+            {CARDS.map((t, index) => (
+              <TestimonialCard key={`${t.name}-${index}`} t={t} index={index} />
+            ))}
+          </div>
+
+          {/* Dot navigation */}
+          <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label="Jump to review">
+            {filtered.map((t, i) => (
+              <button
+                key={i}
+                role="tab"
+                aria-selected={activeDot === i}
+                aria-label={`Go to review by ${t.name}`}
+                onClick={() => jumpToDot(i)}
+                className="group relative flex items-center justify-center transition-all duration-200"
+              >
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    activeDot === i
+                      ? "w-6 h-2 bg-brand"
+                      : "w-2 h-2 bg-border group-hover:bg-brand/40"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
         </div>
-
-        {/* Track */}
-        <div
-          ref={trackRef}
-          className="flex gap-5 overflow-x-hidden px-8 pb-4"
-          style={{
-            cursor: grabbing ? "grabbing" : "grab",
-            userSelect: "none",
-            WebkitOverflowScrolling: "touch",
-          }}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseEnter={() => {
-            const badge = document.getElementById("pause-badge");
-            if (badge) badge.style.opacity = "1";
-          }}
-          onMouseLeave={() => {
-            const badge = document.getElementById("pause-badge");
-            if (badge) badge.style.opacity = "0";
-          }}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          aria-label="Customer testimonials — drag to scroll"
-          role="region"
-        >
-          {CARDS.map((t, index) => (
-            <article
-              key={`${t.name}-${index}`}
-              className="group/card relative flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1"
-              draggable={false}
-            >
-              <svg className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 text-brand/[0.06] transition-all duration-500 group-hover/card:scale-125 group-hover/card:text-brand/[0.12]" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
-                <path d="M20 65c0-16 10-31 28-40l5 8C40 40 36 50 36 56h12v24H20V65zm40 0c0-16 10-31 28-40l5 8C80 40 76 50 76 56h12v24H60V65z" />
-              </svg>
-
-              <div className="flex items-center gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 ${i < t.rating ? "fill-accent text-accent" : "text-border"}`} aria-hidden="true" />
-                ))}
-              </div>
-
-              {t.serviceType && (
-                <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/[0.07] px-3 py-1 text-xs font-semibold tracking-wide text-brand">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-pulse-soft rounded-full bg-brand/60" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
-                  </span>
-                  {t.serviceType}
-                </span>
-              )}
-
-              <blockquote className="relative z-10 mt-4 flex-1 text-sm leading-relaxed text-ink-soft">
-                &ldquo;{t.text}&rdquo;
-              </blockquote>
-
-              <footer className="relative mt-5 pt-4">
-                <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-ink transition-colors duration-300 group-hover/card:text-brand">{t.name}</p>
-                    <p className="mt-0.5 text-xs text-ink-soft">{t.suburb}</p>
-                  </div>
-                  <time className="rounded-md bg-surface-alt px-2.5 py-1 text-xs font-medium text-ink-light">{t.date}</time>
-                </div>
-              </footer>
-            </article>
-          ))}
+      ) : (
+        /* Static centered grid for small filtered sets */
+        <div className="container-x mt-10">
+          <div className="flex flex-wrap justify-center gap-5 pb-4">
+            {filtered.map((t, index) => (
+              <TestimonialCard key={`${t.name}-${index}`} t={t} index={index} />
+            ))}
+          </div>
         </div>
-
-        {/* Dot navigation */}
-        <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label="Jump to review">
-          {filtered.map((t, i) => (
-            <button
-              key={i}
-              role="tab"
-              aria-selected={activeDot === i}
-              aria-label={`Go to review by ${t.name}`}
-              onClick={() => jumpToDot(i)}
-              className="group relative flex items-center justify-center transition-all duration-200"
-            >
-              <span
-                className={`block rounded-full transition-all duration-300 ${
-                  activeDot === i
-                    ? "w-6 h-2 bg-brand"
-                    : "w-2 h-2 bg-border group-hover:bg-brand/40"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       <div className="container-x mt-8 text-center">
         <ScrollReveal delay={200}>
